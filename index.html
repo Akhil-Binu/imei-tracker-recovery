@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMEI Tracker & Validator</title>
+    <link rel="stylesheet" href="leaflet.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <!-- Animated background -->
+        <div class="bg-grid"></div>
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="glow glow-3"></div>
+
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect x="4" y="2" width="24" height="28" rx="4" stroke="currentColor" stroke-width="2"/>
+                        <rect x="8" y="6" width="16" height="16" rx="2" fill="currentColor" opacity="0.2"/>
+                        <circle cx="16" cy="26" r="2" fill="currentColor"/>
+                        <path d="M12 10L16 14L20 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M16 14V18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>IMEI Tracker</h1>
+                    <p class="subtitle">Validate · Identify · Recovery Hub</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-ghost" id="themeToggle" title="Toggle theme">
+                    <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    </svg>
+                    <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Tab Navigation -->
+            <nav class="tabs">
+                <button class="tab active" data-tab="single">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+                    Single Check
+                </button>
+                <button class="tab" data-tab="livemap">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+                    Live GPS Map
+                </button>
+                <button class="tab" data-tab="recovery">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Lost & Recovery
+                </button>
+                <button class="tab" data-tab="bulk">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Bulk Check
+                </button>
+                <button class="tab" data-tab="generator">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                    Generator
+                </button>
+                <button class="tab" data-tab="history">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    History
+                </button>
+            </nav>
+
+            <!-- Single Check Tab -->
+            <section class="tab-content active" id="tab-single">
+                <div class="input-section">
+                    <div class="input-group">
+                        <label for="imeiInput">Enter IMEI Number</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="imeiInput" placeholder="e.g., 353456789012345" maxlength="15" autocomplete="off" spellcheck="false">
+                            <span class="char-count"><span id="charCount">0</span>/15</span>
+                        </div>
+                        <div class="input-hints">
+                            <span class="hint">Dial <code>*#06#</code> on your phone to find your IMEI</span>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="checkBtn" disabled>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                            Analyze IMEI
+                        </button>
+                        <button class="btn btn-outline" id="pasteBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+                            Paste
+                        </button>
+                        <button class="btn btn-outline" id="clearBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                            Clear
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="results-section" id="results" style="display:none">
+                    <!-- Validation Status -->
+                    <div class="result-card status-card" id="statusCard">
+                        <div class="status-icon" id="statusIcon"></div>
+                        <div class="status-info">
+                            <h3 id="statusTitle"></h3>
+                            <p id="statusDesc"></p>
+                        </div>
+                    </div>
+
+                    <!-- IMEI Structure -->
+                    <div class="result-card">
+                        <h3 class="card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4a2 2 0 012-2h8.5L20 7.5V20a2 2 0 01-2 2H4"/><path d="M14 2v6h6"/><path d="M3 15h6M3 18h4"/></svg>
+                            IMEI Structure
+                        </h3>
+                        <div class="imei-breakdown" id="imeiBreakdown"></div>
+                        <div class="structure-legend">
+                            <div class="legend-item"><span class="legend-color tac"></span> TAC (Type Allocation Code)</div>
+                            <div class="legend-item"><span class="legend-color serial"></span> Serial Number</div>
+                            <div class="legend-item"><span class="legend-color check"></span> Check Digit (Luhn)</div>
+                        </div>
+                    </div>
+
+                    <!-- Device Info -->
+                    <div class="result-card" id="deviceCard">
+                        <h3 class="card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+                            Device Information
+                        </h3>
+                        <div class="device-info" id="deviceInfo"></div>
+                    </div>
+
+                    <!-- Luhn Verification -->
+                    <div class="result-card">
+                        <h3 class="card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            Luhn Algorithm Verification
+                        </h3>
+                        <div class="luhn-steps" id="luhnSteps"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Live GPS Map Tab -->
+            <section class="tab-content" id="tab-livemap">
+                <!-- Top Configuration / Tracking Link Card -->
+                <div class="input-section">
+                    <div class="section-badge-header">
+                        <span class="tag-badge success">Live Satellite Radar</span>
+                        <h2>Real-Time GPS Device Tracking</h2>
+                        <p class="subtitle-text">Generate a tracking link or beacon to stream real-time GPS coordinates, speed, and heading to this interactive radar map.</p>
+                    </div>
+
+                    <div class="map-controls-bar" style="margin-top: 18px;">
+                        <div class="input-group">
+                            <label>Tracking Link (Send to Phone or Open on Target)</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="trackingLinkInput" readonly style="font-size: 0.95rem; letter-spacing: 0.05em; color: var(--tac-color);">
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" id="copyTrackingLinkBtn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                Copy Link
+                            </button>
+                            <button class="btn btn-outline" id="openBeaconBtn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                Open Transmitter
+                            </button>
+                            <button class="btn btn-outline" id="trackThisDeviceBtn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+                                <span id="trackThisDeviceText">Track This Device (GPS)</span>
+                            </button>
+                            <button class="btn btn-outline" id="simulateMovementBtn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                                <span id="simBtnText">Simulate Route Movement</span>
+                            </button>
+                            <button class="btn btn-outline" id="newSessionBtn" title="Generate New Session ID">
+                                🔄 New Session
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Map Radar Card -->
+                <div class="result-card map-card-container">
+                    <!-- Telemetry HUD Bar -->
+                    <div class="map-hud-bar">
+                        <div class="hud-item">
+                            <span class="hud-label">Signal Status</span>
+                            <span class="hud-value" id="hudStatus">
+                                <span class="hud-dot waiting"></span> Awaiting Target...
+                            </span>
+                        </div>
+                        <div class="hud-item">
+                            <span class="hud-label">Coordinates</span>
+                            <span class="hud-value" id="hudCoords">--.------, --.------</span>
+                        </div>
+                        <div class="hud-item">
+                            <span class="hud-label">Speed</span>
+                            <span class="hud-value" id="hudSpeed">0 km/h</span>
+                        </div>
+                        <div class="hud-item">
+                            <span class="hud-label">Heading</span>
+                            <span class="hud-value" id="hudHeading">--°</span>
+                        </div>
+                        <div class="hud-item">
+                            <span class="hud-label">Accuracy</span>
+                            <span class="hud-value" id="hudAccuracy">± -- m</span>
+                        </div>
+                        <div class="hud-item">
+                            <span class="hud-label">Altitude</span>
+                            <span class="hud-value" id="hudAltitude">-- m</span>
+                        </div>
+                        <div class="hud-item">
+                            <span class="hud-label">Battery</span>
+                            <span class="hud-value" id="hudBattery">--</span>
+                        </div>
+                        <div class="hud-actions">
+                            <button class="btn btn-sm btn-ghost" id="recenterMapBtn" title="Recenter on Target">📍 Center</button>
+                            <button class="btn btn-sm btn-ghost" id="clearTrailBtn" title="Clear Path History">🧹 Clear Trail</button>
+                        </div>
+                    </div>
+
+                    <!-- The Map -->
+                    <div id="gpsMap" class="live-map-element"></div>
+                </div>
+            </section>
+
+            <!-- Lost & Recovery Hub Tab -->
+            <section class="tab-content" id="tab-recovery">
+                <!-- Stolen / Blacklist Checker -->
+                <div class="input-section">
+                    <div class="section-badge-header">
+                        <span class="tag-badge warning">Emergency Recovery & Blacklist</span>
+                        <h2>Lost or Stolen Device Center</h2>
+                        <p class="subtitle-text">Check if an IMEI is reported stolen, initiate nationwide telecom blocking, and generate police FIR reports.</p>
+                    </div>
+
+                    <div class="input-group" style="margin-top: 20px;">
+                        <label for="recoveryImeiInput">Check IMEI Blacklist Status</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="recoveryImeiInput" placeholder="Enter 15-digit IMEI to check" maxlength="15" autocomplete="off">
+                            <span class="char-count"><span id="recoveryCharCount">0</span>/15</span>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="checkBlacklistBtn" disabled>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            Check Blacklist Status
+                        </button>
+                        <button class="btn btn-outline" id="toggleStolenBtn" style="display:none">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                            <span id="toggleStolenText">Simulate Report Stolen</span>
+                        </button>
+                        <button class="btn btn-outline" id="useCurrentImeiBtn">
+                            Use IMEI from Single Check
+                        </button>
+                    </div>
+
+                    <!-- Blacklist Result Card -->
+                    <div class="blacklist-result-box" id="blacklistResult" style="display:none;"></div>
+                </div>
+
+                <!-- Emergency 6-Step Action Plan -->
+                <div class="result-card">
+                    <h3 class="card-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        Immediate Emergency Protocol (Check off as you complete)
+                    </h3>
+                    <div class="protocol-checklist" id="protocolChecklist">
+                        <label class="protocol-item">
+                            <input type="checkbox" data-step="sim">
+                            <div class="protocol-content">
+                                <strong>1. Block SIM Card Immediately</strong>
+                                <p>Call your carrier operator customer care immediately. Prevents thieves from receiving OTPs, taking over WhatsApp, or accessing bank accounts.</p>
+                            </div>
+                        </label>
+                        <label class="protocol-item">
+                            <input type="checkbox" data-step="findmy">
+                            <div class="protocol-content">
+                                <strong>2. Enable "Lost Mode" via Cloud</strong>
+                                <p>Use Apple Find My or Google Find My Device to remotely lock the screen with an emergency contact number and erase sensitive data if needed.</p>
+                            </div>
+                        </label>
+                        <label class="protocol-item">
+                            <input type="checkbox" data-step="police">
+                            <div class="protocol-content">
+                                <strong>3. File a Police Report / Lost Article Complaint</strong>
+                                <p>Obtain an official FIR or Lost Article Acknowledgement number. This number is mandatory to execute a national CEIR network block and insurance claims.</p>
+                            </div>
+                        </label>
+                        <label class="protocol-item">
+                            <input type="checkbox" data-step="ceir">
+                            <div class="protocol-content">
+                                <strong>4. Block IMEI on National Registry (CEIR / Carrier)</strong>
+                                <p>Submit your IMEI to CEIR (India) or carrier blacklist. Once blocked, the device is completely banned from connecting to any cellular tower, even with a new SIM.</p>
+                            </div>
+                        </label>
+                        <label class="protocol-item">
+                            <input type="checkbox" data-step="upi">
+                            <div class="protocol-content">
+                                <strong>5. De-register Banking, UPI & Wallets</strong>
+                                <p>Call your bank or use web portals to deactivate Google Pay, PhonePe, Paytm, Apple Pay, and Netbanking on the lost device.</p>
+                            </div>
+                        </label>
+                        <label class="protocol-item">
+                            <input type="checkbox" data-step="passwords">
+                            <div class="protocol-content">
+                                <strong>6. Reset Core Account Passwords & Revoke Sessions</strong>
+                                <p>Change passwords for Google/Apple ID, primary email, social accounts, and choose "Sign out of all other devices".</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Official Government & Telecom Portals -->
+                <div class="result-card">
+                    <h3 class="card-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        Official Recovery Portals & Tracking Services
+                    </h3>
+                    <div class="portal-grid">
+                        <!-- CEIR India -->
+                        <div class="portal-card">
+                            <div class="portal-badge">Govt of India / DoT</div>
+                            <h4>CEIR - Sanchar Saathi</h4>
+                            <p>Official Department of Telecommunications portal to block lost phones across all Indian telecom networks and track police recovery status.</p>
+                            <div class="portal-links">
+                                <a href="https://www.ceir.gov.in/Request/CeirUserBlockRequestDirect.jsp" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">
+                                    🚫 Block Stolen Phone
+                                </a>
+                                <a href="https://www.ceir.gov.in/Request/CeirRequestStatus.jsp" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline">
+                                    📋 Track Request Status
+                                </a>
+                                <a href="https://www.ceir.gov.in/Request/CeirUserUnblockRequestDirect.jsp" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline">
+                                    🔓 Unblock Recovered Phone
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Google Find My Device -->
+                        <div class="portal-card">
+                            <div class="portal-badge">Android</div>
+                            <h4>Google Find My Device</h4>
+                            <p>Locate, ring, lock, or erase any Android smartphone or tablet connected to your Google account with real-time GPS network finding.</p>
+                            <div class="portal-links">
+                                <a href="https://www.google.com/android/find" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">
+                                    📍 Open Google Find My
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Apple Find My -->
+                        <div class="portal-card">
+                            <div class="portal-badge">Apple iOS</div>
+                            <h4>Apple iCloud Find My</h4>
+                            <p>Track your iPhone, activate Lost Mode (locks with custom contact number), or remotely erase device contents via Apple iCloud.</p>
+                            <div class="portal-links">
+                                <a href="https://www.icloud.com/find" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">
+                                    🍎 Open iCloud Find My
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- US / International -->
+                        <div class="portal-card">
+                            <div class="portal-badge">USA / International</div>
+                            <h4>CTIA & GSMA Check</h4>
+                            <p>North American CTIA Stolen Phone database and UK National Property Register (Immobilise) for cross-carrier blacklisting.</p>
+                            <div class="portal-links">
+                                <a href="https://stolenphonechecker.org/spc/" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline">
+                                    🇺🇸 CTIA StolenPhoneChecker
+                                </a>
+                                <a href="https://www.immobilise.com/" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline">
+                                    🇬🇧 Immobilise UK
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Police Complaint (FIR) Generator -->
+                <div class="result-card">
+                    <h3 class="card-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        Police Complaint / Lost Mobile FIR Generator
+                    </h3>
+                    <p class="subtitle-text" style="margin-bottom: 16px;">Fill in incident details to draft a formatted, legally compliant police complaint letter ready to print or copy.</p>
+
+                    <div class="complaint-form">
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="firOwnerName">Owner Full Name</label>
+                                <input type="text" id="firOwnerName" placeholder="e.g., Akhil Binu">
+                            </div>
+                            <div class="input-group">
+                                <label for="firContactPhone">Contact Phone Number (Alternate / Relative)</label>
+                                <input type="text" id="firContactPhone" placeholder="e.g., +91 98765 43210">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="firDeviceModel">Device Brand & Model</label>
+                                <input type="text" id="firDeviceModel" placeholder="e.g., Samsung Galaxy S23 Ultra">
+                            </div>
+                            <div class="input-group">
+                                <label for="firImei1">Primary IMEI (IMEI 1)</label>
+                                <input type="text" id="firImei1" placeholder="15-digit IMEI" maxlength="15">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="firImei2">Secondary IMEI (IMEI 2, if dual SIM)</label>
+                                <input type="text" id="firImei2" placeholder="Optional 15-digit IMEI 2" maxlength="15">
+                            </div>
+                            <div class="input-group">
+                                <label for="firSimNumber">Lost SIM Mobile Number & Carrier</label>
+                                <input type="text" id="firSimNumber" placeholder="e.g., +91 91234 56789 (Jio / Airtel)">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="firDate">Date & Time of Incident</label>
+                                <input type="text" id="firDate" placeholder="e.g., 06 Nov 2026, around 8:30 PM">
+                            </div>
+                            <div class="input-group">
+                                <label for="firLocation">Place / Approximate Location Where Lost</label>
+                                <input type="text" id="firLocation" placeholder="e.g., Metro Station / Market Road">
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" id="generateFirBtn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                Generate Police Complaint
+                            </button>
+                            <button class="btn btn-outline" id="autoFillFirBtn">
+                                Auto-Fill from Current Lookup
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Output Letter Preview -->
+                    <div class="complaint-output" id="firOutputBox" style="display:none; margin-top: 24px;">
+                        <div class="output-header">
+                            <h4>Formatted Complaint Draft</h4>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline" id="copyFirBtn">Copy Text</button>
+                                <button class="btn btn-sm btn-primary" id="printFirBtn">Print / Save PDF</button>
+                            </div>
+                        </div>
+                        <pre class="fir-letter-text" id="firLetterText"></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bulk Check Tab -->
+            <section class="tab-content" id="tab-bulk">
+                <div class="input-section">
+                    <div class="input-group">
+                        <label for="bulkInput">Enter multiple IMEI numbers (one per line)</label>
+                        <textarea id="bulkInput" rows="6" placeholder="353456789012345&#10;490154203237518&#10;351756051523999"></textarea>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="bulkCheckBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                            Check All
+                        </button>
+                        <button class="btn btn-outline" id="bulkExportBtn" style="display:none">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Export CSV
+                        </button>
+                    </div>
+                </div>
+                <div class="bulk-results" id="bulkResults"></div>
+            </section>
+
+            <!-- Generator Tab -->
+            <section class="tab-content" id="tab-generator">
+                <div class="input-section">
+                    <div class="generator-options">
+                        <div class="input-group">
+                            <label for="genCount">Number of IMEIs</label>
+                            <input type="number" id="genCount" value="5" min="1" max="100">
+                        </div>
+                        <div class="input-group">
+                            <label for="genTac">TAC Prefix (optional)</label>
+                            <input type="text" id="genTac" placeholder="e.g., 35345678" maxlength="8">
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="generateBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                            Generate
+                        </button>
+                        <button class="btn btn-outline" id="copyGenBtn" style="display:none">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                            Copy All
+                        </button>
+                    </div>
+                </div>
+                <div class="generated-list" id="generatedList"></div>
+            </section>
+
+            <!-- History Tab -->
+            <section class="tab-content" id="tab-history">
+                <div class="history-header">
+                    <h3>Recent Lookups</h3>
+                    <button class="btn btn-ghost btn-sm" id="clearHistoryBtn">Clear All</button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="empty-state">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <p>No lookups yet. Check an IMEI to get started.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>IMEI Tracker &mdash; For educational, validation, and recovery support purposes</p>
+        </footer>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="leaflet.js"></script>
+    <script src="mqtt.min.js"></script>
+    <script src="tac-database.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

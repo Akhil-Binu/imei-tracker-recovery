@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GPS Beacon Transmitter</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="mqtt.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .beacon-card {
+            width: 100%;
+            max-width: 460px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+        .beacon-pulse-ring {
+            width: 110px;
+            height: 110px;
+            margin: 0 auto 20px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pulse-circle {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.15;
+            animation: pulseWave 2s ease-out infinite;
+        }
+        .pulse-circle-2 {
+            position: absolute;
+            inset: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.25;
+            animation: pulseWave 2s ease-out 0.6s infinite;
+        }
+        .beacon-center-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 20px var(--accent-glow);
+            z-index: 2;
+        }
+        @keyframes pulseWave {
+            0% { transform: scale(0.6); opacity: 0.5; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+        .beacon-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .beacon-status-badge.active {
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        .beacon-status-badge.waiting {
+            background: var(--warning-bg);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .beacon-status-badge.error {
+            background: var(--error-bg);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .telemetry-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .tele-item {
+            background: var(--bg-input);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+        .tele-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+        .tele-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="beacon-card">
+        <div style="text-align: center;">
+            <div class="beacon-pulse-ring">
+                <div class="pulse-circle"></div>
+                <div class="pulse-circle-2"></div>
+                <div class="beacon-center-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="beacon-status-badge waiting" id="beaconStatusBadge">
+                <span class="spinner-small" id="beaconSpinner"></span>
+                <span id="beaconStatusText">Requesting GPS Access...</span>
+            </div>
+
+            <h2 style="font-size: 1.3rem; margin: 6px 0 2px;">Live GPS Transmitter</h2>
+            <p class="subtitle-text" id="targetDeviceInfo">Target Device Session</p>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                Session ID: <code id="displaySessionId">--------</code>
+            </p>
+        </div>
+
+        <!-- Telemetry readout -->
+        <div class="telemetry-grid">
+            <div class="tele-item">
+                <div class="tele-label">Latitude</div>
+                <div class="tele-value" id="valLat">--.------°</div>
+            </div>
+            <div class="tele-item">
+                <div class="tele-label">Longitude</div>
+                <div class="tele-value" id="valLng">--.------°</div>
+            </div>
+            <div class="tele-item">
+                <div class="tele-label">Accuracy</div>
+                <div class="tele-value" id="valAcc">± -- m</div>
+            </div>
+            <div class="tele-item">
+                <div class="tele-label">Speed</div>
+                <div class="tele-value" id="valSpeed">-- km/h</div>
+            </div>
+            <div class="tele-item">
+                <div class="tele-label">Altitude</div>
+                <div class="tele-value" id="valAlt">-- m</div>
+            </div>
+            <div class="tele-item">
+                <div class="tele-label">Heading</div>
+                <div class="tele-value" id="valHeading">--°</div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 18px; padding: 0 4px;">
+            <span>Packets: <strong id="packetsCount" style="color:var(--text-primary)">0</strong></span>
+            <span>Transmission: <strong id="netChannel" style="color:var(--tac-color)">Local + Cloud</strong></span>
+            <span>Battery: <strong id="batteryLevel" style="color:var(--text-primary)">--</strong></span>
+        </div>
+
+        <div class="action-buttons" style="flex-direction: column;">
+            <button class="btn btn-primary" id="toggleBroadcastBtn" style="width: 100%; justify-content: center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+                </svg>
+                Pause Broadcasting
+            </button>
+            <a href="index.html" class="btn btn-outline" style="width: 100%; justify-content: center; text-decoration: none;">
+                Open Radar Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session') || 'DEMO_' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        const deviceName = urlParams.get('device') || 'Mobile Device';
+
+        document.getElementById('displaySessionId').textContent = sessionId;
+        document.getElementById('targetDeviceInfo').textContent = decodeURIComponent(deviceName);
+
+        const statusBadge = document.getElementById('beaconStatusBadge');
+        const statusText = document.getElementById('beaconStatusText');
+        const spinner = document.getElementById('beaconSpinner');
+        const toggleBtn = document.getElementById('toggleBroadcastBtn');
+        const packetsCount = document.getElementById('packetsCount');
+        const batteryDisplay = document.getElementById('batteryLevel');
+
+        let isBroadcasting = true;
+        let watchId = null;
+        let packetsSent = 0;
+        let currentBattery = null;
+
+        // 1. Local Broadcast Channel for instant same-browser updates
+        let bc = null;
+        try {
+            bc = new BroadcastChannel(`imei_tracker_${sessionId}`);
+        } catch (e) {}
+
+        // 2. MQTT Cloud WebSocket client for cross-device updates
+        let mqttClient = null;
+        try {
+            mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
+                clientId: 'beacon_' + Math.random().toString(16).substring(2, 8),
+                clean: true,
+                connectTimeout: 5000
+            });
+        } catch (e) {
+            console.warn('MQTT init notice:', e);
+        }
+
+        // Battery API
+        if (navigator.getBattery) {
+            navigator.getBattery().then(batt => {
+                const updateBatt = () => {
+                    const level = Math.round(batt.level * 100);
+                    currentBattery = `${level}% ${batt.charging ? '⚡' : ''}`;
+                    batteryDisplay.textContent = currentBattery;
+                };
+                updateBatt();
+                batt.addEventListener('levelchange', updateBatt);
+                batt.addEventListener('chargingchange', updateBatt);
+            });
+        }
+
+        function startTracking() {
+            if (!('geolocation' in navigator)) {
+                statusBadge.className = 'beacon-status-badge error';
+                statusText.textContent = 'Geolocation not supported';
+                if (spinner) spinner.style.display = 'none';
+                return;
+            }
+
+            statusBadge.className = 'beacon-status-badge waiting';
+            statusText.textContent = 'Acquiring High-Precision GPS Lock...';
+
+            watchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    if (!isBroadcasting) return;
+
+                    const coords = pos.coords;
+                    const lat = coords.latitude;
+                    const lng = coords.longitude;
+                    const accuracy = Math.round(coords.accuracy);
+                    const speed = coords.speed != null ? Math.round(coords.speed * 3.6) : 0; // m/s to km/h
+                    const altitude = coords.altitude != null ? Math.round(coords.altitude) : 0;
+                    const heading = coords.heading != null ? Math.round(coords.heading) : 0;
+
+                    document.getElementById('valLat').textContent = lat.toFixed(6) + '°';
+                    document.getElementById('valLng').textContent = lng.toFixed(6) + '°';
+                    document.getElementById('valAcc').textContent = `± ${accuracy} m`;
+                    document.getElementById('valSpeed').textContent = `${speed} km/h`;
+                    document.getElementById('valAlt').textContent = `${altitude} m`;
+                    document.getElementById('valHeading').textContent = `${heading}°`;
+
+                    statusBadge.className = 'beacon-status-badge active';
+                    statusText.textContent = '🟢 GPS Locked & Broadcasting Live';
+                    if (spinner) spinner.style.display = 'none';
+
+                    const payload = {
+                        sessionId,
+                        deviceName,
+                        lat,
+                        lng,
+                        accuracy,
+                        speed,
+                        altitude,
+                        heading,
+                        battery: currentBattery,
+                        timestamp: Date.now()
+                    };
+
+                    packetsSent++;
+                    packetsCount.textContent = packetsSent;
+
+                    // Send to Local BroadcastChannel
+                    if (bc) {
+                        try { bc.postMessage(payload); } catch(e){}
+                    }
+
+                    // Save to LocalStorage for storage listener
+                    localStorage.setItem(`imei_live_gps_${sessionId}`, JSON.stringify(payload));
+
+                    // Send via Public MQTT WebSocket for cross-device live streaming
+                    if (mqttClient && mqttClient.connected) {
+                        mqttClient.publish(`imei_tracker/${sessionId}`, JSON.stringify(payload));
+                    }
+                },
+                (err) => {
+                    statusBadge.className = 'beacon-status-badge error';
+                    statusText.textContent = `GPS Error: ${err.message}`;
+                    if (spinner) spinner.style.display = 'none';
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 8000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        function stopTracking() {
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            isBroadcasting = !isBroadcasting;
+            if (isBroadcasting) {
+                toggleBtn.className = 'btn btn-primary';
+                toggleBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+                    </svg>
+                    Pause Broadcasting
+                `;
+                startTracking();
+            } else {
+                toggleBtn.className = 'btn btn-outline';
+                toggleBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    Resume Broadcasting
+                `;
+                statusBadge.className = 'beacon-status-badge waiting';
+                statusText.textContent = 'Broadcasting Paused';
+                stopTracking();
+            }
+        });
+
+        startTracking();
+    </script>
+</body>
+</html>

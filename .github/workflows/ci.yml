@@ -1,0 +1,27 @@
+name: CI Quality & Syntax Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate Python Build Script Syntax
+        run: |
+          python -m py_compile build_tac_database.py
+
+      - name: Validate JSON Manifests
+        run: |
+          python -c "import json; json.load(open('package.json'))"
