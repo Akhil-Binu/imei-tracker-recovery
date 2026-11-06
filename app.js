@@ -1274,7 +1274,20 @@ Contact: ${contact}`;
     // Initialize
     // ============================================
     renderHistory();
-    imeiInput.focus();
+    // Only auto-focus on non-touch devices to prevent jarring mobile virtual keyboard popups
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        imeiInput.focus();
+    }
+
+    // Auto-adjust Leaflet map dimensions on window resize and mobile orientation change
+    window.addEventListener('resize', () => {
+        if (leafletMap) leafletMap.invalidateSize();
+    });
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            if (leafletMap) leafletMap.invalidateSize();
+        }, 250);
+    });
 
     document.addEventListener('keydown', (e) => {
         if (e.ctrlKey && e.key === 'v' && document.activeElement !== imeiInput && document.activeElement !== bulkInput && document.activeElement !== recoveryImeiInput) {

@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>GPS Beacon Transmitter</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -118,6 +121,33 @@
             font-size: 0.95rem;
             font-weight: 600;
             color: var(--text-primary);
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+            .beacon-card {
+                padding: 20px 16px;
+            }
+            .beacon-pulse-ring {
+                width: 90px;
+                height: 90px;
+                margin-bottom: 14px;
+            }
+            .beacon-center-icon {
+                width: 48px;
+                height: 48px;
+            }
+            .telemetry-grid {
+                gap: 8px;
+                margin: 16px 0;
+            }
+            .tele-item {
+                padding: 10px;
+            }
+            .tele-value {
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>

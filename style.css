@@ -74,8 +74,14 @@ body {
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
+    min-height: -webkit-fill-available;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button, input, select, textarea {
+    touch-action: manipulation;
 }
 
 /* ============================================
@@ -357,6 +363,10 @@ body {
     position: relative;
 }
 
+.input-wrapper input {
+    padding-right: 64px;
+}
+
 .input-wrapper input,
 input[type="text"],
 input[type="number"],
@@ -373,6 +383,7 @@ textarea {
     letter-spacing: 0.15em;
     transition: all 0.2s ease;
     outline: none;
+    box-sizing: border-box;
 }
 
 textarea {
@@ -538,23 +549,37 @@ textarea:focus {
 .imei-breakdown {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 3px;
     margin-bottom: 20px;
-    flex-wrap: wrap;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 4px 2px;
+}
+
+.imei-breakdown::-webkit-scrollbar {
+    display: none;
 }
 
 .imei-digit {
-    width: 42px;
-    height: 52px;
+    flex: 1 1 0;
+    min-width: 16px;
+    max-width: 42px;
+    height: clamp(34px, 8.5vw, 52px);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 1.2rem;
+    font-size: clamp(0.75rem, 3.2vw, 1.2rem);
     font-weight: 600;
     border-radius: 8px;
     border: 2px solid transparent;
     transition: all 0.3s ease;
+    box-sizing: border-box;
+    padding: 0;
 }
 
 .imei-digit.tac {
@@ -1025,9 +1050,10 @@ textarea:focus {
 
 .live-map-element {
     width: 100%;
-    height: 520px;
+    height: clamp(340px, 50vh, 520px);
     background: #0f1016;
     z-index: 1;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
 /* Radar Pulse Marker in Leaflet */
@@ -1395,70 +1421,360 @@ textarea:focus {
 }
 
 /* ============================================
-   Responsive
+   Mobile & Responsive Excellence
    ============================================ */
-@media (max-width: 640px) {
+
+/* Tablet & Smaller (< 768px) */
+@media (max-width: 768px) {
     .app {
-        padding: 0 14px;
+        padding: 0 16px;
     }
 
-    .tabs {
-        flex-wrap: wrap;
-    }
-
-    .tab {
-        font-size: 0.75rem;
-        padding: 8px 10px;
-    }
-
-    .tab svg {
-        display: none;
-    }
-
-    .input-section {
-        padding: 20px;
-    }
-
-    .input-wrapper input {
-        font-size: 1rem;
-    }
-
-    .imei-digit {
-        width: 32px;
-        height: 42px;
-        font-size: 1rem;
-    }
-
-    .device-info {
-        grid-template-columns: 1fr;
+    .header {
+        padding: 16px 0;
+        margin-bottom: 20px;
     }
 
     .portal-grid {
         grid-template-columns: 1fr;
     }
 
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-
     .generator-options {
         grid-template-columns: 1fr;
     }
+}
 
-    .structure-legend {
-        flex-direction: column;
-        align-items: center;
+/* Mobile Screens (< 640px) */
+@media (max-width: 640px) {
+    .app {
+        padding: 0 12px;
     }
 
-    .bulk-item {
-        flex-wrap: wrap;
+    /* Header */
+    .header {
+        padding: 14px 0;
+        margin-bottom: 18px;
     }
 
+    .logo {
+        gap: 10px;
+    }
+
+    .logo-icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .logo-icon svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .logo h1 {
+        font-size: 1.25rem;
+    }
+
+    .subtitle {
+        font-size: 0.72rem;
+    }
+
+    /* Swipeable Tab Navigation */
+    .tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 6px;
+        padding: 6px;
+        margin-bottom: 20px;
+        border-radius: var(--radius-sm);
+    }
+
+    .tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        gap: 6px;
+    }
+
+    .tab svg {
+        width: 15px;
+        height: 15px;
+        flex-shrink: 0;
+        display: inline-block;
+    }
+
+    /* Input & Action Cards */
+    .input-section {
+        padding: 18px 16px;
+        border-radius: var(--radius-md);
+        margin-bottom: 18px;
+    }
+
+    .input-wrapper input {
+        font-size: 1.05rem;
+        letter-spacing: 0.1em;
+        padding: 12px 14px;
+        padding-right: 56px;
+    }
+
+    .char-count {
+        right: 12px;
+        font-size: 0.7rem;
+    }
+
+    .input-hints {
+        font-size: 0.75rem;
+    }
+
+    /* Buttons */
     .action-buttons {
+        display: flex;
         flex-direction: column;
+        width: 100%;
+        gap: 8px;
     }
 
     .action-buttons .btn {
+        width: 100%;
         justify-content: center;
+        padding: 12px 16px;
+        min-height: 44px;
+    }
+
+    /* Result Cards */
+    .result-card {
+        padding: 18px 16px;
+        border-radius: var(--radius-md);
+    }
+
+    .card-title {
+        font-size: 0.9rem;
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+    }
+
+    .status-card {
+        padding: 16px;
+        gap: 14px;
+    }
+
+    .status-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 1.25rem;
+    }
+
+    .status-info h3 {
+        font-size: 1rem;
+    }
+
+    .status-info p {
+        font-size: 0.8rem;
+    }
+
+    /* Device Info */
+    .device-info {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .info-item {
+        padding: 12px;
+    }
+
+    .external-links {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+
+    .external-links .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 8px 10px;
+        font-size: 0.72rem;
+    }
+
+    /* Luhn Verification Steps */
+    .luhn-step {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 10px 12px;
+    }
+
+    .luhn-step .step-value {
+        font-size: 0.78rem;
+        word-break: break-all;
+    }
+
+    /* Live GPS Radar & HUD */
+    .map-hud-bar {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .hud-item {
+        background: var(--bg-input);
+        padding: 8px 10px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+    }
+
+    .hud-label {
+        font-size: 0.62rem;
+    }
+
+    .hud-value {
+        font-size: 0.8rem;
+    }
+
+    .hud-actions {
+        grid-column: 1 / -1;
+        margin-left: 0;
+        width: 100%;
+        display: flex;
+        gap: 8px;
+        margin-top: 4px;
+    }
+
+    .hud-actions .btn {
+        flex: 1;
+        justify-content: center;
+        min-height: 40px;
+    }
+
+    .live-map-element {
+        height: 380px;
+    }
+
+    /* Recovery Hub */
+    .protocol-item {
+        padding: 12px 14px;
+        gap: 10px;
+    }
+
+    .protocol-content strong {
+        font-size: 0.85rem;
+    }
+
+    .protocol-content p {
+        font-size: 0.78rem;
+    }
+
+    /* Police FIR Generator */
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .complaint-output {
+        padding: 14px;
+    }
+
+    .output-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .output-header .action-buttons {
+        flex-direction: row;
+        width: 100%;
+    }
+
+    .output-header .action-buttons .btn {
+        flex: 1;
+    }
+
+    .fir-letter-text {
+        font-size: 0.75rem;
+        padding: 12px;
+        word-break: break-word;
+    }
+
+    /* Bulk & History Items */
+    .bulk-item {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px 14px;
+    }
+
+    .bulk-item .bulk-device {
+        width: 100%;
+        text-align: left;
+        order: 3;
+    }
+
+    .history-item {
+        flex-wrap: wrap;
+        gap: 6px 10px;
+        padding: 12px 14px;
+    }
+
+    .history-item .hist-device {
+        width: 100%;
+        text-align: left;
+        order: 3;
+        font-size: 0.75rem;
+    }
+
+    .history-item .hist-time {
+        margin-left: auto;
+        order: 2;
+    }
+
+    /* Toast Container */
+    .toast-container {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+    }
+
+    .toast {
+        min-width: unset;
+        width: 100%;
+    }
+}
+
+/* Ultra Narrow Screens (< 380px) */
+@media (max-width: 380px) {
+    .app {
+        padding: 0 8px;
+    }
+
+    .map-hud-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .external-links {
+        grid-template-columns: 1fr;
+    }
+
+    .status-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .status-icon {
+        margin: 0 auto;
+    }
+
+    .output-header .action-buttons {
+        flex-direction: column;
+    }
+
+    .live-map-element {
+        height: 320px;
     }
 }
