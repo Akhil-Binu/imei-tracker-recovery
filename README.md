@@ -12,8 +12,8 @@
 
 ## 🌐 Live Demo & Deployment
 
-- **Production Deployment (Vercel)**: [https://imei-hazel.vercel.app](https://imei-hazel.vercel.app)
-- **Live Beacon Transmitter**: [https://imei-hazel.vercel.app/beacon.html](https://imei-hazel.vercel.app/beacon.html)
+- **Production Deployment (Vercel)**: [https://imei-akhil-athul.vercel.app](https://imei-akhil-athul.vercel.app) *(Alternate: [https://imei-hazel.vercel.app](https://imei-hazel.vercel.app))*
+- **Live Beacon Transmitter**: [https://imei-akhil-athul.vercel.app/beacon.html](https://imei-akhil-athul.vercel.app/beacon.html)
 
 ---
 
