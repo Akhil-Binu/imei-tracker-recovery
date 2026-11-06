@@ -35,6 +35,6 @@ classifiers = [
 requires-python = ">=3.8"
 
 [project.urls]
-Homepage = "https://akhil-binu.github.io/imei-tracker-recovery"
+Homepage = "https://imei-hazel.vercel.app"
 Repository = "https://github.com/Akhil-Binu/imei-tracker-recovery.git"
 Issues = "https://github.com/Akhil-Binu/imei-tracker-recovery/issues"

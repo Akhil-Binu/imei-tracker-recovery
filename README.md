@@ -12,8 +12,8 @@
 
 ## 🌐 Live Demo & Deployment
 
-- **Live Web App**: [https://akhil-binu.github.io/imei-tracker-recovery/](https://akhil-binu.github.io/imei-tracker-recovery/)
-- **Beacon Transmitter**: [https://akhil-binu.github.io/imei-tracker-recovery/beacon.html](https://akhil-binu.github.io/imei-tracker-recovery/beacon.html)
+- **Production Deployment (Vercel)**: [https://imei-hazel.vercel.app](https://imei-hazel.vercel.app)
+- **Live Beacon Transmitter**: [https://imei-hazel.vercel.app/beacon.html](https://imei-hazel.vercel.app/beacon.html)
 
 ---
 
@@ -109,7 +109,7 @@ Open `http://localhost:8080` in your browser.
 If you modify or update `tac_full.csv` with new TAC allocations:
 
 ```bash
-python build_tac_database.py
+python scripts/build_tac_database.py
 ```
 
 This processes the CSV and rebuilds `tac-database.js` with structured object maps and the legacy 6-digit matcher.

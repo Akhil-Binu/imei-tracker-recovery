@@ -64,9 +64,13 @@ RBI_INFO = {
     "99": {"name": "TIA (Telecommunications Industry Association)", "region": "United States (CDMA)"},
 }
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CSV_PATH = os.path.join(ROOT_DIR, 'tac_full.csv')
+OUTPUT_JS_PATH = os.path.join(ROOT_DIR, 'tac-database.js')
+
 database = {}
 
-with open('tac_full.csv', 'r', encoding='utf-8', errors='ignore') as f:
+with open(CSV_PATH, 'r', encoding='utf-8', errors='ignore') as f:
     reader = csv.reader(f)
     next(reader) # skip header
     for row in reader:
@@ -189,8 +193,8 @@ function lookupTAC(imei) {
 }
 """
 
-with open('tac-database.js', 'w', encoding='utf-8') as f:
+with open(OUTPUT_JS_PATH, 'w', encoding='utf-8') as f:
     f.write(js_header)
 
-size_mb = os.path.getsize('tac-database.js') / (1024 * 1024)
+size_mb = os.path.getsize(OUTPUT_JS_PATH) / (1024 * 1024)
 print(f"Generated tac-database.js ({size_mb:.2f} MB)")

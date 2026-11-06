@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "serve .",
-    "build:tac": "python build_tac_database.py",
+    "build:tac": "python scripts/build_tac_database.py",
     "test": "echo \"Error: no test specified\" && exit 0"
   },
   "keywords": [
@@ -32,5 +32,5 @@
   "bugs": {
     "url": "https://github.com/Akhil-Binu/imei-tracker-recovery/issues"
   },
-  "homepage": "https://akhil-binu.github.io/imei-tracker-recovery"
+  "homepage": "https://imei-hazel.vercel.app"
 }
