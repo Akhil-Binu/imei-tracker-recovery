@@ -60,4 +60,9 @@ yarn-error.log*
 *.bak
 .gemini/
 
+# Credentials & Secrets
+.npmrc
+.env
+.env.*
+
 .vercel

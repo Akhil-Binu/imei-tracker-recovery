@@ -1,8 +1,23 @@
 {
-  "name": "imei-tracker-recovery",
+  "name": "@akhil-binu/imei-tracker-recovery",
   "version": "1.0.0",
   "description": "Open-source IMEI validator, 275k+ offline TAC device identifier, real-time GPS radar tracking, and stolen device recovery hub.",
   "main": "app.js",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "files": [
+    "index.html",
+    "beacon.html",
+    "app.js",
+    "style.css",
+    "tac-database.js",
+    "leaflet.js",
+    "leaflet.css",
+    "mqtt.min.js",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "start": "serve .",
     "build:tac": "python scripts/build_tac_database.py",
@@ -27,7 +42,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Akhil-Binu/imei-tracker-recovery.git"
+    "url": "git+https://github.com/Akhil-Binu/imei-tracker-recovery.git"
   },
   "bugs": {
     "url": "https://github.com/Akhil-Binu/imei-tracker-recovery/issues"
