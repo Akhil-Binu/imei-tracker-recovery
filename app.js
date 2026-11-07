@@ -563,15 +563,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics'
             });
 
-            // Add default layer
-            cartoVoyager.addTo(leafletMap);
+            // Add default layer (Satellite View)
+            esriSatellite.addTo(leafletMap);
 
             // Layer Switcher Control in top-right
             const baseLayers = {
+                "Satellite View": esriSatellite,
                 "Carto Voyager": cartoVoyager,
                 "Carto Dark": cartoDark,
-                "OpenStreetMap": osmStandard,
-                "Satellite View": esriSatellite
+                "OpenStreetMap": osmStandard
             };
             L.control.layers(baseLayers, null, { position: 'topright' }).addTo(leafletMap);
 
